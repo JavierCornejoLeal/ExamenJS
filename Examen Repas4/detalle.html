@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Producto</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <script src="./js/detalle.js" type="application/javascript"></script>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Detalle del Producto</h1>
+
+    <div class="card mb-4" id="cardDetalle">
+        <img class="card-img-top" src="" alt="">
+        <div class="card-body">
+            <h2 class="card-title"></h2>
+            <p class="card-text"></p>
+            <ul class="list-group list-group-flush mb-3">
+                <li class="list-group-item"><strong>Categoría: </strong><span></span></li>
+                <li class="list-group-item"><strong>Precio: </strong><span></span></li>
+                <li class="list-group-item"><strong>Stock: </strong><span></span></li>
+            </ul>
+            <a href="index.html" class="btn btn-secondary">← Volver al catálogo</a>
+        </div>
+    </div>
+
+    <div class="alert alert-danger d-none" id="mensajeError">
+        Producto no encontrado. <a href="index.html">Volver al catálogo</a>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,43 +1,65 @@
 document.addEventListener("DOMContentLoaded", function() {
-    let parametros = new URLSearchParams(window.location.search);
-    let id = parseInt(parametros.get("id"));
+    const parametrosURL = new URLSearchParams(window.location.search);
+    const idProducto = parseInt(parametrosURL.get("id"));
 
-    if (isNaN(id)) {
-        mostrarError("ID no válido");
+    if (isNaN(idProducto)) {
+        mostrarMensajeError("ID de producto no válido.");
         return;
     }
 
-    let catalogo = JSON.parse(localStorage.getItem("catalogo"));
+    const catalogo = JSON.parse(localStorage.getItem("catalogo"));
     if (!catalogo) {
-        mostrarError("No hay catálogo");
+        mostrarMensajeError("No hay catálogo disponible.");
         return;
     }
 
-    let producto = catalogo.find(p => p.id === id);
+    const producto = catalogo.find(p => p.id === idProducto);
     if (!producto) {
-        mostrarError("Producto no encontrado");
+        mostrarMensajeError(`Producto con ID ${idProducto} no encontrado.`);
         return;
     }
 
-    document.querySelector(".detalle-nombre").textContent = producto.nombre;
-    document.querySelector(".detalle-categoria").textContent = producto.categoria;
-    document.querySelector(".detalle-precio").textContent = producto.precio.toFixed(2);
-    document.querySelector(".detalle-stock").textContent = producto.stock;
-    document.querySelector(".detalle-descripcion").textContent = producto.descripcion;
+    // Mostrar los datos en el contenedor (sin innerHTML)
+    const contenedor = document.getElementById("contenedorDetalle");
+    // Vaciar contenedor
+    while (contenedor.firstChild) contenedor.removeChild(contenedor.firstChild);
+
+    // Crear elementos de forma segura
+    const listaDatos = document.createElement("ul");
+    listaDatos.className = "list-group";
+
+    const items = [
+        { etiqueta: "ID", valor: producto.id },
+        { etiqueta: "Nombre", valor: producto.nombre },
+        { etiqueta: "Categoría", valor: producto.categoria },
+        { etiqueta: "Precio", valor: producto.precio.toFixed(2) + " €" },
+        { etiqueta: "Stock", valor: producto.stock },
+        { etiqueta: "Descripción", valor: producto.descripcion }
+    ];
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const elementoLista = document.createElement("li");
+        elementoLista.className = "list-group-item";
+        elementoLista.innerHTML = `<strong>${item.etiqueta}:</strong> ${item.valor}`;
+        listaDatos.appendChild(elementoLista);
+    }
+
+    contenedor.appendChild(listaDatos);
 });
 
-function mostrarError(mensaje) {
-    let body = document.getElementById("detalleBody");
-    while (body.firstChild) body.removeChild(body.firstChild);
-    let alerta = document.createElement("div");
+function mostrarMensajeError(mensaje) {
+    const contenedor = document.getElementById("contenedorDetalle");
+    while (contenedor.firstChild) contenedor.removeChild(contenedor.firstChild);
+    const alerta = document.createElement("div");
     alerta.className = "alert alert-danger text-center";
-    let texto = document.createTextNode(mensaje);
-    let enlace = document.createElement("a");
+    const texto = document.createTextNode(mensaje);
+    const enlace = document.createElement("a");
     enlace.href = "index.html";
     enlace.className = "btn btn-primary mt-3";
     enlace.textContent = "Volver al catálogo";
     alerta.appendChild(texto);
     alerta.appendChild(document.createElement("br"));
     alerta.appendChild(enlace);
-    body.appendChild(alerta);
+    contenedor.appendChild(alerta);
 }

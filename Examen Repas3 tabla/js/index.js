@@ -1,278 +1,364 @@
+// ==================== INICIO ====================
 document.addEventListener("DOMContentLoaded", main);
 
-let catalogo = [];
-let mostrados = [];
-let ordenActual = "default";
-let editandoId = null;
-let opcionesAutocomplete = [];
+// Variables globales (nombres descriptivos)
+let catalogoProductos = [];      // Array con todos los productos
+let productosFiltrados = [];     // Array después de aplicar búsqueda y filtro
+let ordenActual = "default";     // 'default', 'price_asc', 'price_desc'
+let productoEnEdicion = null;    // ID del producto que se está editando (null si es creación)
+let palabrasAutocomplete = [];    // Para el autocomplete (nombres + categorías)
 
+// ==================== FUNCIÓN PRINCIPAL ====================
 async function main() {
-    await cargarDatos();
-    cargarCategoriasFiltro();
-    filtrarYOrdenar();
+    await cargarDatosIniciales();
+    generarOpcionesFiltroCategoria();
+    aplicarFiltrosYOrdenacion();
+    configurarAutocomplete();
 
-    // Autocomplete
-    opcionesAutocomplete = [];
-    catalogo.forEach(prod => {
-        if (!opcionesAutocomplete.includes(prod.nombre)) opcionesAutocomplete.push(prod.nombre);
-        if (!opcionesAutocomplete.includes(prod.categoria)) opcionesAutocomplete.push(prod.categoria);
-    });
-    $("#buscar").autocomplete({ source: opcionesAutocomplete });
-
-    // Eventos formulario
-    let formulario = document.getElementById("formulario-producto");
-    document.getElementById("enviar").addEventListener("click", validar, false);
+    // Eventos del formulario (igual que en reserva.js)
+    const formulario = document.getElementById("productForm");
+    document.getElementById("submitBtn").addEventListener("click", validarYEnviar, false);
     formulario.addEventListener("submit", function(event) {
         event.preventDefault();
         procesarFormulario();
     });
     document.getElementById("cancelEditBtn").addEventListener("click", cancelarEdicion);
 
-    // Filtros y orden
-    document.getElementById("buscar").addEventListener("input", () => filtrarYOrdenar());
-    document.getElementById("filtroCategoria").addEventListener("change", () => filtrarYOrdenar());
-    document.getElementById("ordenDefault").addEventListener("click", () => { ordenActual = "default"; filtrarYOrdenar(); });
-    document.getElementById("ordenAsc").addEventListener("click", () => { ordenActual = "asc"; filtrarYOrdenar(); });
-    document.getElementById("ordenDesc").addEventListener("click", () => { ordenActual = "desc"; filtrarYOrdenar(); });
+    // Eventos de búsqueda, filtro y ordenación
+    document.getElementById("searchInput").addEventListener("input", () => aplicarFiltrosYOrdenacion());
+    document.getElementById("categoryFilter").addEventListener("change", () => aplicarFiltrosYOrdenacion());
+    document.getElementById("sortDefault").addEventListener("click", () => { ordenActual = "default"; aplicarFiltrosYOrdenacion(); });
+    document.getElementById("sortPriceAsc").addEventListener("click", () => { ordenActual = "price_asc"; aplicarFiltrosYOrdenacion(); });
+    document.getElementById("sortPriceDesc").addEventListener("click", () => { ordenActual = "price_desc"; aplicarFiltrosYOrdenacion(); });
 }
 
-async function cargarDatos() {
-    let almacenados = JSON.parse(localStorage.getItem("catalogo"));
-    if (almacenados && almacenados.length > 0) {
-        catalogo = almacenados;
-        return;
+// ==================== CARGA Y PERSISTENCIA (localStorage + JSON) ====================
+async function cargarDatosIniciales() {
+    const productosAlmacenados = localStorage.getItem("catalogo");
+    if (productosAlmacenados) {
+        catalogoProductos = JSON.parse(productosAlmacenados);
+    } else {
+        const respuesta = await fetch("productos.json");
+        catalogoProductos = await respuesta.json();
+        guardarEnLocalStorage();
     }
-    let resp = await fetch("productos.json");
-    let json = await resp.json();
-    catalogo = json;
-    localStorage.setItem("catalogo", JSON.stringify(catalogo));
 }
 
-function guardarStorage() {
-    localStorage.setItem("catalogo", JSON.stringify(catalogo));
+function guardarEnLocalStorage() {
+    localStorage.setItem("catalogo", JSON.stringify(catalogoProductos));
 }
 
-function cargarCategoriasFiltro() {
-    let select = document.getElementById("filtroCategoria");
-    let cats = [];
-    catalogo.forEach(p => { if (!cats.includes(p.categoria)) cats.push(p.categoria); });
-    cats.forEach(c => {
-        let opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
+// ==================== FILTRO POR CATEGORÍA (generación dinámica) ====================
+function generarOpcionesFiltroCategoria() {
+    const selectCategoria = document.getElementById("categoryFilter");
+    const categoriasUnicas = [];
+    for (let producto of catalogoProductos) {
+        if (!categoriasUnicas.includes(producto.categoria)) {
+            categoriasUnicas.push(producto.categoria);
+        }
+    }
+    for (let categoria of categoriasUnicas) {
+        const opcion = document.createElement("option");
+        opcion.value = categoria;
+        opcion.textContent = categoria;
+        selectCategoria.appendChild(opcion);
+    }
+}
+
+// ==================== FILTRO (búsqueda + categoría) Y ORDENACIÓN ====================
+function aplicarFiltrosYOrdenacion() {
+    const textoBusqueda = document.getElementById("searchInput").value.toLowerCase();
+    const categoriaSeleccionada = document.getElementById("categoryFilter").value;
+
+    // Filtrar
+    let filtrados = catalogoProductos.filter(producto => {
+        const coincideTexto = producto.nombre.toLowerCase().includes(textoBusqueda) ||
+                              producto.categoria.toLowerCase().includes(textoBusqueda);
+        const coincideCategoria = (categoriaSeleccionada === "all") || producto.categoria === categoriaSeleccionada;
+        return coincideTexto && coincideCategoria;
     });
-}
 
-function filtrarYOrdenar() {
-    let texto = document.getElementById("buscar").value.toLowerCase();
-    let categoria = document.getElementById("filtroCategoria").value;
-    let filtrados = catalogo.filter(p => {
-        let coincideTexto = p.nombre.toLowerCase().includes(texto) || p.categoria.toLowerCase().includes(texto);
-        let coincideCat = (categoria === "all") || p.categoria === categoria;
-        return coincideTexto && coincideCat;
-    });
-    if (ordenActual === "asc") filtrados.sort((a,b) => a.precio - b.precio);
-    else if (ordenActual === "desc") filtrados.sort((a,b) => b.precio - a.precio);
-    else filtrados.sort((a,b) => a.id - b.id);
-    mostrados = filtrados;
-    pintarTabla();
-}
-
-function pintarTabla() {
-    let tbody = document.getElementById("tabla-productos");
-    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
-
-    if (mostrados.length === 0) {
-        let fila = document.createElement("tr");
-        let celda = document.createElement("td");
-        celda.colSpan = 6;
-        celda.textContent = "No hay productos que coincidan";
-        celda.className = "text-center";
-        fila.appendChild(celda);
-        tbody.appendChild(fila);
-        return;
+    // Ordenar
+    if (ordenActual === "price_asc") {
+        filtrados.sort((a, b) => a.precio - b.precio);
+    } else if (ordenActual === "price_desc") {
+        filtrados.sort((a, b) => b.precio - a.precio);
+    } else {
+        filtrados.sort((a, b) => a.id - b.id);
     }
 
-    mostrados.forEach(prod => {
-        let fila = document.createElement("tr");
+    productosFiltrados = filtrados;
+    renderizarTabla();
+}
 
-        let celdaId = document.createElement("td");
-        celdaId.textContent = prod.id;
-        let celdaNombre = document.createElement("td");
-        celdaNombre.textContent = prod.nombre;
-        let celdaCat = document.createElement("td");
-        celdaCat.textContent = prod.categoria;
-        let celdaPrecio = document.createElement("td");
-        celdaPrecio.textContent = prod.precio.toFixed(2) + " €";
-        let celdaStock = document.createElement("td");
-        celdaStock.textContent = prod.stock;
+// ==================== RENDERIZADO DE LA TABLA (uso intensivo del DOM) ====================
+function renderizarTabla() {
+    const tbody = document.getElementById("productTableBody");
+    // Vaciar el tbody
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
 
-        let celdaAcciones = document.createElement("td");
-        let btnEditar = document.createElement("button");
-        btnEditar.textContent = "Editar";
-        btnEditar.className = "btn btn-sm btn-warning me-1";
-        btnEditar.addEventListener("click", () => cargarParaEditar(prod.id));
+    if (productosFiltrados.length === 0) {
+        const filaVacia = document.createElement("tr");
+        const celdaMensaje = document.createElement("td");
+        celdaMensaje.colSpan = 6;
+        celdaMensaje.className = "text-center";
+        celdaMensaje.textContent = "No hay productos que coincidan con los filtros.";
+        filaVacia.appendChild(celdaMensaje);
+        tbody.appendChild(filaVacia);
+        return;
+    }
 
-        let btnEliminar = document.createElement("button");
-        btnEliminar.textContent = "Eliminar";
-        btnEliminar.className = "btn btn-sm btn-danger me-1";
-        btnEliminar.addEventListener("click", () => eliminarProducto(prod.id));
+    for (let producto of productosFiltrados) {
+        const fila = document.createElement("tr");
 
-        let btnDetalle = document.createElement("a");
-        btnDetalle.textContent = "Ver";
-        btnDetalle.className = "btn btn-sm btn-info";
-        btnDetalle.href = "detalle.html?id=" + prod.id;
-
-        celdaAcciones.appendChild(btnEditar);
-        celdaAcciones.appendChild(btnEliminar);
-        celdaAcciones.appendChild(btnDetalle);
-
+        // ID
+        const celdaId = document.createElement("td");
+        celdaId.textContent = producto.id;
         fila.appendChild(celdaId);
+
+        // Nombre
+        const celdaNombre = document.createElement("td");
+        celdaNombre.textContent = producto.nombre;
         fila.appendChild(celdaNombre);
-        fila.appendChild(celdaCat);
+
+        // Categoría
+        const celdaCategoria = document.createElement("td");
+        celdaCategoria.textContent = producto.categoria;
+        fila.appendChild(celdaCategoria);
+
+        // Precio
+        const celdaPrecio = document.createElement("td");
+        celdaPrecio.textContent = producto.precio.toFixed(2) + " €";
         fila.appendChild(celdaPrecio);
+
+        // Stock
+        const celdaStock = document.createElement("td");
+        celdaStock.textContent = producto.stock;
         fila.appendChild(celdaStock);
+
+        // Acciones (botones)
+        const celdaAcciones = document.createElement("td");
+
+        const botonEditar = document.createElement("button");
+        botonEditar.textContent = "Editar";
+        botonEditar.className = "btn btn-sm btn-warning me-2";
+        botonEditar.addEventListener("click", (function(id) {
+            return function() { cargarProductoParaEditar(id); };
+        })(producto.id));
+
+        const botonEliminar = document.createElement("button");
+        botonEliminar.textContent = "Eliminar";
+        botonEliminar.className = "btn btn-sm btn-danger me-2";
+        botonEliminar.addEventListener("click", (function(id) {
+            return function() { eliminarProducto(id); };
+        })(producto.id));
+
+        const enlaceDetalle = document.createElement("a");
+        enlaceDetalle.textContent = "Ver detalle";
+        enlaceDetalle.className = "btn btn-sm btn-info";
+        enlaceDetalle.href = `detalle.html?id=${producto.id}`;
+
+        celdaAcciones.appendChild(botonEditar);
+        celdaAcciones.appendChild(botonEliminar);
+        celdaAcciones.appendChild(enlaceDetalle);
         fila.appendChild(celdaAcciones);
 
         tbody.appendChild(fila);
-    });
+    }
 }
 
-function cargarParaEditar(id) {
-    let prod = catalogo.find(p => p.id === id);
-    if (!prod) return;
-    editandoId = id;
-    document.getElementById("nombre").value = prod.nombre;
-    document.getElementById("categoria").value = prod.categoria;
-    document.getElementById("precio").value = prod.precio;
-    document.getElementById("stock").value = prod.stock;
-    document.getElementById("descripcion").value = prod.descripcion;
+// ==================== CRUD: UPDATE (cargar producto en formulario) ====================
+function cargarProductoParaEditar(idProducto) {
+    const producto = catalogoProductos.find(p => p.id === idProducto);
+    if (!producto) return;
+
+    productoEnEdicion = idProducto;
+    document.getElementById("nombre").value = producto.nombre;
+    document.getElementById("categoria").value = producto.categoria;
+    document.getElementById("precio").value = producto.precio;
+    document.getElementById("stock").value = producto.stock;
+    document.getElementById("descripcion").value = producto.descripcion;
+
     document.getElementById("formTitle").textContent = "Editar Producto";
-    document.getElementById("enviar").textContent = "Actualizar";
+    document.getElementById("submitBtn").textContent = "Actualizar Producto";
     document.getElementById("cancelEditBtn").style.display = "block";
 }
 
 function cancelarEdicion() {
-    document.getElementById("formulario-producto").reset();
-    editandoId = null;
+    document.getElementById("productForm").reset();
+    productoEnEdicion = null;
     document.getElementById("formTitle").textContent = "Añadir Producto";
-    document.getElementById("enviar").textContent = "Añadir Producto";
+    document.getElementById("submitBtn").textContent = "Añadir Producto";
     document.getElementById("cancelEditBtn").style.display = "none";
-    esborrarError();
+    borrarErrores();
 }
 
+// ==================== PROCESAR FORMULARIO (CREATE / UPDATE) ====================
 function procesarFormulario() {
-    let nombre = document.getElementById("nombre").value.trim();
-    let categoria = document.getElementById("categoria").value;
-    let precio = parseFloat(document.getElementById("precio").value);
-    let stock = parseInt(document.getElementById("stock").value);
-    let descripcion = document.getElementById("descripcion").value.trim();
+    const nombre = document.getElementById("nombre").value.trim();
+    const categoria = document.getElementById("categoria").value;
+    const precio = parseFloat(document.getElementById("precio").value);
+    const stock = parseInt(document.getElementById("stock").value);
+    const descripcion = document.getElementById("descripcion").value.trim();
 
-    if (editandoId !== null) {
-        let index = catalogo.findIndex(p => p.id === editandoId);
-        if (index !== -1) {
-            catalogo[index] = { id: editandoId, nombre, categoria, precio, stock, descripcion };
-            guardarStorage();
-            filtrarYOrdenar();
+    if (productoEnEdicion !== null) {
+        // UPDATE
+        const indice = catalogoProductos.findIndex(p => p.id === productoEnEdicion);
+        if (indice !== -1) {
+            catalogoProductos[indice] = {
+                id: productoEnEdicion,
+                nombre: nombre,
+                categoria: categoria,
+                precio: precio,
+                stock: stock,
+                descripcion: descripcion
+            };
+            guardarEnLocalStorage();
+            aplicarFiltrosYOrdenacion();
             cancelarEdicion();
         }
     } else {
-        let nuevoId = catalogo.length > 0 ? Math.max(...catalogo.map(p => p.id)) + 1 : 1;
-        catalogo.push({ id: nuevoId, nombre, categoria, precio, stock, descripcion });
-        guardarStorage();
-        filtrarYOrdenar();
+        // CREATE: generar nuevo ID (máximo ID actual + 1)
+        let nuevoId = 1;
+        if (catalogoProductos.length > 0) {
+            const ids = catalogoProductos.map(p => p.id);
+            nuevoId = Math.max(...ids) + 1;
+        }
+        const nuevoProducto = {
+            id: nuevoId,
+            nombre: nombre,
+            categoria: categoria,
+            precio: precio,
+            stock: stock,
+            descripcion: descripcion
+        };
+        catalogoProductos.push(nuevoProducto);
+        guardarEnLocalStorage();
+        aplicarFiltrosYOrdenacion();
         cancelarEdicion();
     }
 }
 
-function eliminarProducto(id) {
-    if (confirm("¿Eliminar producto?")) {
-        catalogo = catalogo.filter(p => p.id !== id);
-        guardarStorage();
-        if (editandoId === id) cancelarEdicion();
-        filtrarYOrdenar();
+// ==================== DELETE con confirmación ====================
+function eliminarProducto(idProducto) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+        catalogoProductos = catalogoProductos.filter(producto => producto.id !== idProducto);
+        guardarEnLocalStorage();
+        if (productoEnEdicion === idProducto) cancelarEdicion();
+        aplicarFiltrosYOrdenacion();
     }
 }
 
-function validar(e) {
-    esborrarError();
-    e.preventDefault();
-    if (validarNombre() && validarCategoria() && validarPrecio() && validarStock() && validarDescripcion() && confirm("Confirma si vols guardar el producte")) {
-        document.getElementById("formulario-producto").requestSubmit();
+// ==================== AUTOCOMPLETE (jQuery UI) ====================
+function configurarAutocomplete() {
+    palabrasAutocomplete = [];
+    for (let producto of catalogoProductos) {
+        if (!palabrasAutocomplete.includes(producto.nombre)) palabrasAutocomplete.push(producto.nombre);
+        if (!palabrasAutocomplete.includes(producto.categoria)) palabrasAutocomplete.push(producto.categoria);
+    }
+    $("#searchInput").autocomplete({
+        source: palabrasAutocomplete
+    });
+}
+
+// Función principal que se llama al hacer clic en el botón "Enviar"
+function validarYEnviar(event) {
+    borrarErrores();
+    event.preventDefault();
+    if (validarNombre() && validarCategoria() && validarPrecio() && validarStock() && validarDescripcion() && confirm("¿Confirma que desea guardar el producto?")) {
+        document.getElementById("productForm").requestSubmit();
         return true;
     } else {
         return false;
     }
 }
 
+// Validación individual del campo nombre
 function validarNombre() {
-    var element = document.getElementById("nombre");
-    if (!element.checkValidity()) {
-        if (element.validity.valueMissing) error(element, "El nom és obligatori.");
-        if (element.validity.patternMismatch) error(element, "El nom ha de tenir entre 3 i 60 caràcters, només lletres, números i espais.");
+    const campo = document.getElementById("nombre");
+    if (!campo.checkValidity()) {
+        if (campo.validity.valueMissing) {
+            error(campo, "El nombre del producto es obligatorio.");
+        } else if (campo.validity.patternMismatch) {
+            error(campo, "El nombre debe tener entre 3 y 60 caracteres, solo letras, números y espacios.");
+        } else {
+            error(campo, "Nombre no válido.");
+        }
         return false;
     }
     return true;
 }
 
 function validarCategoria() {
-    var element = document.getElementById("categoria");
-    if (element.value === "" || element.value === null) {
-        error(element, "Has de seleccionar una categoria.");
+    const campo = document.getElementById("categoria");
+    if (campo.value === "" || campo.value === null) {
+        error(campo, "Debes seleccionar una categoría.");
         return false;
     }
     return true;
 }
 
 function validarPrecio() {
-    var element = document.getElementById("precio");
-    if (!element.checkValidity()) {
-        if (element.validity.valueMissing) error(element, "El preu és obligatori.");
-        if (element.validity.patternMismatch) error(element, "El preu ha de ser un número decimal positiu amb fins a dos decimals (ex: 199.99).");
+    const campo = document.getElementById("precio");
+    if (!campo.checkValidity()) {
+        if (campo.validity.valueMissing) {
+            error(campo, "El precio es obligatorio.");
+        } else if (campo.validity.patternMismatch) {
+            error(campo, "Formato de precio incorrecto. Ejemplo: 199.99");
+        } else {
+            error(campo, "Precio no válido.");
+        }
         return false;
     }
-    if (parseFloat(element.value) <= 0) {
-        error(element, "El preu ha de ser major que zero.");
+    if (parseFloat(campo.value) <= 0) {
+        error(campo, "El precio debe ser mayor que cero.");
         return false;
     }
     return true;
 }
 
 function validarStock() {
-    var element = document.getElementById("stock");
-    if (!element.checkValidity()) {
-        if (element.validity.valueMissing) error(element, "L'estoc és obligatori.");
-        if (element.validity.rangeUnderflow) error(element, "L'estoc no pot ser negatiu.");
+    const campo = document.getElementById("stock");
+    if (!campo.checkValidity()) {
+        if (campo.validity.valueMissing) {
+            error(campo, "El stock es obligatorio.");
+        } else if (campo.validity.rangeUnderflow) {
+            error(campo, "El stock no puede ser negativo.");
+        } else {
+            error(campo, "Stock no válido.");
+        }
         return false;
     }
     return true;
 }
 
 function validarDescripcion() {
-    var element = document.getElementById("descripcion");
-    if (element.value.trim() === "") {
-        error(element, "La descripció és obligatòria.");
+    const campo = document.getElementById("descripcion");
+    if (campo.value.trim() === "") {
+        error(campo, "La descripción es obligatoria.");
         return false;
     }
-    if (element.value.length > 200) {
-        error(element, "La descripció no pot superar els 200 caràcters.");
+    if (campo.value.length > 200) {
+        error(campo, "La descripción no puede superar los 200 caracteres.");
         return false;
     }
     return true;
 }
 
-function error(element, missatge) {
-    let miss = document.createTextNode(missatge);
-    document.getElementById("errorMensaje").appendChild(miss);
-    element.classList.add("text-danger");
-    element.focus();
+// Funciones error y borrarErrores (idénticas a reserva.js)
+function error(elemento, mensaje) {
+    const textoError = document.createTextNode(mensaje);
+    document.getElementById("errorMessage").appendChild(textoError);
+    elemento.classList.add("text-danger");
+    elemento.focus();
 }
 
-function esborrarError() {
-    document.getElementById("errorMensaje").textContent = "";
-    let formulari = document.forms[0];
-    for (let i = 0; i < formulari.elements.length; i++) {
-        formulari.elements[i].classList.remove("text-danger");
+function borrarErrores() {
+    document.getElementById("errorMessage").textContent = "";
+    const formulario = document.forms[0];
+    for (let i = 0; i < formulario.elements.length; i++) {
+        formulario.elements[i].classList.remove("text-danger");
     }
 }
