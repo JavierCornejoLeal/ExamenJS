@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "nombre": "MacBook Pro 14",
+    "categoria": "Portátiles",
+    "precio": 2199.99,
+    "stock": 12,
+    "descripcion": "Chip M3 Pro, 18 GB RAM, 512 GB SSD"
+  },
+  {
+    "id": 2,
+    "nombre": "Sony WH-1000XM5",
+    "categoria": "Audio",
+    "precio": 349.00,
+    "stock": 30,
+    "descripcion": "Auriculares inalámbricos con ANC"
+  },
+  {
+    "id": 3,
+    "nombre": "iPhone 15 Pro",
+    "categoria": "Móviles",
+    "precio": 1299.99,
+    "stock": 8,
+    "descripcion": "A17 Pro, 256GB, Titanio"
+  }
+]
