@@ -1,0 +1,49 @@
+{
+    "productos": [
+        {
+            "id": 1,
+            "nombre": "MacBook Pro 14",
+            "categoria": "Portátiles",
+            "precio": 2199.99,
+            "stock": 12,
+            "descripcion": "Chip M3 Pro, 18 GB RAM, 512 GB SSD",
+            "img": "macbook.jpg"
+        },
+        {
+            "id": 2,
+            "nombre": "Sony WH-1000XM5",
+            "categoria": "Audio",
+            "precio": 349.00,
+            "stock": 30,
+            "descripcion": "Auriculares inalámbricos con cancelación de ruido activa",
+            "img": "sony.jpg"
+        },
+        {
+            "id": 3,
+            "nombre": "Samsung Galaxy S24",
+            "categoria": "Móviles",
+            "precio": 899.99,
+            "stock": 25,
+            "descripcion": "6.2 pulgadas, 256 GB, cámara 50 MP",
+            "img": "samsung.jpg"
+        },
+        {
+            "id": 4,
+            "nombre": "iPad Air M2",
+            "categoria": "Tablets",
+            "precio": 749.00,
+            "stock": 18,
+            "descripcion": "11 pulgadas, 128 GB, chip M2",
+            "img": "ipad.jpg"
+        },
+        {
+            "id": 5,
+            "nombre": "LG 27GP850",
+            "categoria": "Monitores",
+            "precio": 399.99,
+            "stock": 8,
+            "descripcion": "27 pulgadas, 180 Hz, 1ms, IPS, QHD",
+            "img": "lg_monitor.jpg"
+        }
+    ]
+}

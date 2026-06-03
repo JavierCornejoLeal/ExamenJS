@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <script src="./js/jquery-3.7.1.min.js"></script>
+    <script src="./js/jquery-ui.js"></script>
+    <link rel="stylesheet" href="./css/jquery-ui.css">
+    <script src="./js/index.js" type="application/javascript"></script>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Catálogo de Productos</h1>
+
+    <!-- Ordenación y búsqueda -->
+    <div class="mb-3 d-flex gap-2 align-items-center flex-wrap">
+        <button class="btn btn-secondary" id="btnRelevancia">Relevancia</button>
+        <button class="btn btn-secondary" id="btnPrecioAlto">Precio ↓</button>
+        <button class="btn btn-secondary" id="btnPrecioBajo">Precio ↑</button>
+        <input class="form-control w-auto" type="text" id="buscador" placeholder="Buscar por nombre o categoría...">
+        <button class="btn btn-primary" id="btnBuscar">Buscar</button>
+        <select class="form-control w-auto" id="filtroCat">
+            <option value="">Todas las categorías</option>
+        </select>
+    </div>
+
+    <div class="row">
+
+        <!-- Listado -->
+        <div class="col-lg-8" id="listado">
+            <!--
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Nombre</h5>
+                    <p class="card-text"></p>
+                    <span class="badge bg-secondary"></span>
+                    <span class="badge bg-success"></span>
+                    <span class="badge bg-info"></span>
+                    <br>
+                    <a href="detalle.html?id=1" class="btn btn-info btn-sm mt-2">Ver detalle</a>
+                    <button class="btn btn-warning btn-sm mt-2">Editar</button>
+                    <button class="btn btn-danger btn-sm mt-2">Eliminar</button>
+                </div>
+            </div>
+            -->
+        </div>
+
+        <!-- Formulario añadir / editar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white" id="tituloFormulario">Añadir producto</div>
+                <div class="card-body">
+                    <form id="formulario-producto">
+
+                        <input type="hidden" id="productoId">
+
+                        <div class="mb-2">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control"
+                                required pattern="^[\w\s\-\.]{3,60}$">
+                        </div>
+                        <div class="mb-2">
+                            <label for="categoria">Categoría</label>
+                            <input type="text" id="categoria" name="categoria" class="form-control"
+                                required pattern="^[\w\s]{2,40}$">
+                        </div>
+                        <div class="mb-2">
+                            <label for="precio">Precio (€)</label>
+                            <input type="text" id="precio" name="precio" class="form-control"
+                                required pattern="^\d+(\.\d{1,2})?$" placeholder="199.99">
+                        </div>
+                        <div class="mb-2">
+                            <label for="stock">Stock</label>
+                            <input type="text" id="stock" name="stock" class="form-control"
+                                required pattern="^\d+$" placeholder="0">
+                        </div>
+                        <div class="mb-2">
+                            <label for="descripcion">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" class="form-control"
+                                maxlength="200" required></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label for="img">Imagen (.jpg/.png/.webp)</label>
+                            <input type="text" id="img" name="img" class="form-control"
+                                required pattern="^.+\.(jpg|png|webp)$" placeholder="foto.jpg">
+                        </div>
+
+                        <p class="text-danger mt-2" id="errorMensaje"></p>
+
+                        <button type="reset" class="btn btn-secondary mt-2" id="btnCancelar">Cancelar</button>
+                        <button type="submit" class="btn btn-primary mt-2" id="btnEnviar">Añadir</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
