@@ -334,7 +334,7 @@ function ordenarPrecioBajo() {
 // ─────────────────────────────────────────────
 //  VALIDACIÓN (checkValidity)
 // ─────────────────────────────────────────────
-function validarNombre() {
+function validarNombres() {
     let element = document.getElementById("nombre");
     if (!element.checkValidity()) {
         if (element.validity.valueMissing) {
@@ -418,7 +418,7 @@ function validarImg() {
 function validar(e) {
     esborrarError();
     e.preventDefault();
-    if (validarNombre() && validarCategoria() && validarPrecio() && validarStock() && validarDescripcion() && validarImg() && confirm("Confirma si vols guardar el producte")) {
+    if (validarNombres() && validarCategoria() && validarPrecio() && validarStock() && validarDescripcion() && validarImg() && confirm("Confirma si vols guardar el producte")) {
         document.getElementById("formulario-producto").requestSubmit();
         return true;
     } else {
