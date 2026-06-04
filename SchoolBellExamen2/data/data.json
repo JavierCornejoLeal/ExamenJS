@@ -1,0 +1,75 @@
+{
+  "schedules": [
+    {
+      "id": 1,
+      "name": "Horario Invierno",
+      "times": [
+        {
+          "id": 101,
+          "name": "Entrada Mañana",
+          "hour": "08:00",
+          "duration": 60,
+          "songId": 1
+        },
+        {
+          "id": 102,
+          "name": "Inicio Patio",
+          "hour": "11:00",
+          "duration": 30,
+          "songId": 2
+        },
+        {
+          "id": 103,
+          "name": "Fin Patio",
+          "hour": "11:30",
+          "duration": 180,
+          "songId": 3
+        }
+      ]
+    }
+  ],
+  "playlists": [
+    {
+      "id": 1,
+      "name": "Favoritos",
+      "songs": [
+        {
+          "id": 1,
+          "name": "Himno Escolar",
+          "urlSong": "public/audio/LA MUIXERANGA.mp3",
+          "order": 3
+        },
+        {
+          "id": 2,
+          "name": "Walking on Sunshine",
+          "urlSong": "public/audio/Walking On Sunshine.mp3",
+          "order": 2
+        },
+        {
+          "id": 3,
+          "name": "Classical Mozart",
+          "urlSong": "public/audio/Please Dont Go.mp3",
+          "order": 1
+        }
+      ]
+    },
+    {"id": 2,
+      "name": "Falles",
+      "songs": [
+        {
+          "id": 1,
+          "name": " Arrimaeta",
+          "urlSong": "public/audio/ Arrimaeta.mp3",
+          "order": 1
+        },
+        {
+          "id": 2,
+          "name": "Paquito Chocolatero, pasodoble",
+          "urlSong": "public/audio/Paquito.mp3",
+          "order": 2
+        }
+      ]
+    }
+    
+  ]
+}
