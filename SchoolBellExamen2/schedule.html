@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de gestión del timbre escolar - Schedule</title>
+
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">🔔 SchoolBell System</span>
+
+        <button class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#timeModal">
+            + Añadir Hora
+        </button>
+    </div>
+</nav>
+
+
+<!-- CONTENIDO -->
+<div class="container">
+   
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">Programar Timbre (Time)</div>
+                <div class="card-body">
+                    <form id="timeForm" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nombre Momento</label>
+                            <input type="text" id="timeName" class="form-control" placeholder="Ej: Patio" >
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Hora</label>
+                            <input type="time" id="timeHour" class="form-control" >
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Segs</label>
+                            <input type="number" id="timeDuration" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Canción</label>
+                            <select id="timeSongSelect" class="form-select" >
+                                </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success">Asignar a Horario Actual</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+   
+</div>
+</body>
+</html>
+
+
