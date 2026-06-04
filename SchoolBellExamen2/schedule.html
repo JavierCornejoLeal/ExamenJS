@@ -37,23 +37,23 @@
                         <div id="errorMensaje" class="mb-2 text-danger"></div>
                         <div class="col-md-4">
                             <label class="form-label">Nombre Momento</label>
-                            <input type="text" id="timeName" class="form-control" placeholder="Ej: Patio" >
+                            <input type="text" id="timeName" class="form-control" placeholder="Ej: Patio" required minlength="2">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Hora</label>
-                            <input type="time" id="timeHour" class="form-control" >
+                            <input type="time" id="timeHour" class="form-control" required>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Segs</label>
-                            <input type="number" id="timeDuration" class="form-control">
+                            <input type="number" id="timeDuration" class="form-control" required min="1">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Canción</label>
-                            <select id="timeSongSelect" class="form-select" >
+                            <select id="timeSongSelect" class="form-select" required>
                                 </select>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-success">Asignar a Horario Actual</button>
+                            <button type="submit" id="btnGuardarTime" class="btn btn-success">Asignar a Horario Actual</button>
                         </div>
                     </form>
                 </div>
@@ -71,19 +71,19 @@
                                 <div id="errorMensajeAdd" class="mb-2 text-danger"></div>
                                 <div class="col-12">
                                     <label class="form-label">Nombre Momento</label>
-                                    <input type="text" id="addTimeName" class="form-control" placeholder="Ej: Patio">
+                                    <input type="text" id="addTimeName" class="form-control" placeholder="Ej: Patio" required minlength="2">
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label">Hora</label>
-                                    <input type="time" id="addTimeHour" class="form-control">
+                                    <input type="time" id="addTimeHour" class="form-control" required>
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label">Segs</label>
-                                    <input type="number" id="addTimeDuration" class="form-control">
+                                    <input type="number" id="addTimeDuration" class="form-control" required min="1">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Canción</label>
-                                    <select id="addTimeSongSelect" class="form-select"></select>
+                                    <select id="addTimeSongSelect" class="form-select" required></select>
                                 </div>
                                 <div class="col-12 text-end">
                                     <button type="submit" class="btn btn-success">Guardar</button>

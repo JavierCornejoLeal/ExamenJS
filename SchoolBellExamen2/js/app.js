@@ -1,3 +1,50 @@
+document.addEventListener('DOMContentLoaded', main);
+
+async function main() {
+	const form = document.getElementById('timeForm');
+	const btnGuardar = document.getElementById('btnGuardarTime');
+	const addForm = document.getElementById('addTimeForm');
+
+	if (btnGuardar) {
+		btnGuardar.addEventListener('click', validar, false);
+	}
+	if (form) {
+		form.addEventListener('submit', procesarTimeForm);
+	}
+	if (addForm) {
+		addForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+			if (validarModal()) {
+				guardarNuevoFromModal();
+				addForm.reset();
+				const em = document.getElementById('errorMensajeAdd');
+				if (em) em.textContent = '';
+				const addModalEl = document.getElementById('addTimeModal');
+				const modal = bootstrap.Modal.getInstance(addModalEl);
+				if (modal) modal.hide();
+			}
+		});
+	}
+
+	await init();
+}
+
+function procesarTimeForm(e) {
+	e.preventDefault();
+	const form = e.target;
+	if (form.dataset.fromValidate !== '1') {
+		return;
+	}
+	if (form.dataset.editing) {
+		aplicarEdicion(Number(form.dataset.editing));
+		delete form.dataset.editing;
+	} else {
+		guardarNuevo();
+	}
+	delete form.dataset.fromValidate;
+	form.reset();
+}
+
 async function init() {
 	try {
 		const resp = await fetch('./data/data.json');
@@ -17,24 +64,8 @@ async function init() {
 	populateSongSelect(data);
 	populateSongSelect(data, 'addTimeSongSelect');
 	renderAll();
-	const form = document.getElementById('timeForm');
-	form.addEventListener('submit', validar);
-	const addForm = document.getElementById('addTimeForm');
-	if (addForm) {
-		addForm.addEventListener('submit', (e) => {
-			e.preventDefault();
-			if (validarModal()) {
-				guardarNuevoFromModal();
-				addForm.reset();
-				const em = document.getElementById('errorMensajeAdd');
-				if (em) em.textContent = '';
-				const addModalEl = document.getElementById('addTimeModal');
-				const modal = bootstrap.Modal.getInstance(addModalEl);
-				if (modal) modal.hide();
-			}
-		});
-	}
 }
+
 
 function getData() {
 	const data = localStorage.getItem('schoolData');
@@ -164,23 +195,11 @@ function generarId() {
 
 function validar(e) {
 	esborrarError();
-	const form = document.getElementById('timeForm');
-	if (form.dataset.fromValidate === '1') {
-		delete form.dataset.fromValidate;
-		const editing = form.dataset.editing;
-		if (editing) {
-			aplicarEdicion(Number(editing));
-			delete form.dataset.editing;
-		} else {
-			guardarNuevo();
-		}
-		form.reset();
-		return true;
-	}
 	e.preventDefault();
 	if (validarNombres() && validarHora() && validarSegs() && validarCancion() && confirm('Confirma si vols guardar el moment')) {
+		const form = document.getElementById('timeForm');
 		form.dataset.fromValidate = '1';
-		form.requestSubmit();
+		document.getElementById('timeForm').requestSubmit();
 		return true;
 	} else {
 		return false;
@@ -284,46 +303,52 @@ function esborrarError() {
 }
 
 function validarNombres() {
-	const el = document.getElementById('timeName');
-	const v = el.value.trim();
-	if (v.length < 2) {
-		error(el,'El nombre debe tener al menos 2 caracteres');
+	const element = document.getElementById('timeName');
+	if (!element.checkValidity()) {
+		if (element.validity.valueMissing) {
+			error(element, 'El nombre es obligatorio. ');
+		}
+		if (element.validity.tooShort) {
+			error(element, 'El nombre debe tener al menos 2 caracteres. ');
+		}
 		return false;
 	}
 	return true;
 }
 
 function validarHora() {
-	const el = document.getElementById('timeHour');
-	if (!el.value) {
-		error(el,'Debes seleccionar una hora');
+	const element = document.getElementById('timeHour');
+	if (!element.checkValidity()) {
+		if (element.validity.valueMissing) {
+			error(element, 'La hora es obligatoria. ');
+		}
 		return false;
 	}
 	return true;
 }
 
 function validarSegs() {
-	const el = document.getElementById('timeDuration');
-	const v = Number(el.value);
-	if (!v || v <= 0) {
-		error(el,'Segundos deben ser mayor que 0');
+	const element = document.getElementById('timeDuration');
+	if (!element.checkValidity()) {
+		if (element.validity.valueMissing) {
+			error(element, 'Los segundos son obligatorios. ');
+		}
+		if (element.validity.rangeUnderflow) {
+			error(element, 'Segundos deben ser mayores que 0. ');
+		}
 		return false;
 	}
 	return true;
 }
 
 function validarCancion() {
-	const el = document.getElementById('timeSongSelect');
-	if (!el.value) {
-		error(el,'Selecciona una canción');
+	const element = document.getElementById('timeSongSelect');
+	if (!element.checkValidity()) {
+		if (element.validity.valueMissing) {
+			error(element, 'Selecciona una canción. ');
+		}
 		return false;
 	}
 	return true;
-}
-
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', init);
-} else {
-	init();
 }
 
