@@ -8,7 +8,7 @@
     <link href="./css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
 
-    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
 </head>
 
 <body class="bg-light">
@@ -19,8 +19,8 @@
         <span class="navbar-brand mb-0 h1">🔔 SchoolBell System</span>
 
         <button class="btn btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#timeModal">
+            data-bs-toggle="modal"
+            data-bs-target="#addTimeModal">
             + Añadir Hora
         </button>
     </div>
@@ -34,6 +34,7 @@
                 <div class="card-header bg-success text-white">Programar Timbre (Time)</div>
                 <div class="card-body">
                     <form id="timeForm" class="row g-3">
+                        <div id="errorMensaje" class="mb-2 text-danger"></div>
                         <div class="col-md-4">
                             <label class="form-label">Nombre Momento</label>
                             <input type="text" id="timeName" class="form-control" placeholder="Ej: Patio" >
@@ -57,8 +58,50 @@
                     </form>
                 </div>
             </div>
+
+            <div class="modal fade" id="addTimeModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Añadir Hora</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addTimeForm" class="row g-3">
+                                <div id="errorMensajeAdd" class="mb-2 text-danger"></div>
+                                <div class="col-12">
+                                    <label class="form-label">Nombre Momento</label>
+                                    <input type="text" id="addTimeName" class="form-control" placeholder="Ej: Patio">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Hora</label>
+                                    <input type="time" id="addTimeHour" class="form-control">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Segs</label>
+                                    <input type="number" id="addTimeDuration" class="form-control">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Canción</label>
+                                    <select id="addTimeSongSelect" class="form-select"></select>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-success">Guardar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">Horas Programadas</div>
+                <div class="card-body">
+                    <div id="timesContainer"></div>
+                </div>
+            </div>
    
 </div>
+<script src="./js/app.js"></script>
 </body>
 </html>
 
